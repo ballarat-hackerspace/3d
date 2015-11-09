@@ -122,7 +122,7 @@ module hotend_shroud() {
   translate([-14.5, 23.4, -3]) rotate([0, 0, -10]) cube([.8, 7, 5.8]);
 }
 
-module hotend_attachment() {
+module hotend_attachment_e3dv6() {
   // scaffolding attachment
   translate([0, 24, 9]) {
     difference() {
@@ -155,8 +155,69 @@ module hotend_attachment() {
         cube([10, 10, 40], center=true);
     }
   }
+}
 
+module hotend_attachment_sunhokey() {
+  // scaffolding attachment
+  translate([0, 24, 9]) {
+    difference() {
+      difference() {
+        translate([0, 0, 26]) {
+
+          difference() {
+            translate([-5.5, 0, 8])
+              union() {
+                  // main body
+                  cube([51, 6.5, 60], center=true);
+
+                  // fan arm
+                  translate([-20-3.25, -25+3.25, 20])
+                      cube([6.5, 50, 20], center=true);
+              }
+
+            // head attachment slits
+            translate([-16, 0, 15]) hull() {
+              rotate([90, 0, 0]) cylinder(d=$m3_hole, h=10, center=true);
+              translate([0, 0, 15])
+                rotate([90, 0, 0]) cylinder(d=$m3_hole, h=10, center=true);
+            }
+
+            translate([16, 0, 15]) hull() {
+              rotate([90, 0, 0]) cylinder(d=$m3_hole, h=10, center=true);
+              translate([0, 0, 15])
+                rotate([90, 0, 0]) cylinder(d=$m3_hole, h=10, center=true);
+            }
+            // head attachment slits - end
+
+            // fan attachment slits
+            translate([-28.25, -23.25, 8])
+            rotate([0, 0, 90]) {
+                translate([-16, 0, 15]) hull() {
+                  rotate([90, 0, 0]) cylinder(d=$m3_hole, h=10, center=true);
+                  translate([0, 0, 10])
+                    rotate([90, 0, 0]) cylinder(d=$m3_hole, h=10, center=true);
+                }
+
+                translate([16, 0, 15]) hull() {
+                  rotate([90, 0, 0]) cylinder(d=$m3_hole, h=10, center=true);
+                  translate([0, 0, 10])
+                    rotate([90, 0, 0]) cylinder(d=$m3_hole, h=10, center=true);
+                }
+            }
+            // fan attachment slits - end
+          }
+        }
+
+        shroud_attachment(false);
+      }
+      translate([15, 0, 11])
+        cube([10, 10, 40], center=true);
+      translate([-15-5.5, 0, 11])
+        cube([10+11, 10, 40], center=true);
+    }
+  }
 }
 
 hotend_shroud();
-hotend_attachment();
+//hotend_attachment_e3dv6();
+hotend_attachment_sunhokey();
