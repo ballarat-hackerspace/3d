@@ -122,6 +122,20 @@ module hotend_shroud() {
   translate([-14.5, 23.4, -3]) rotate([0, 0, -10]) cube([.8, 7, 5.8]);
 }
 
+module rounded_cube($x, $y, $z, $r) {
+    hull() {
+        translate ([0,  0,  0]) rotate([90, 0, 0]) cylinder(r=$r, h=$y);
+        translate ([0,  0, $z]) rotate([90, 0, 0]) cylinder(r=$r, h=$y);
+        translate ([$x, 0, $z]) rotate([90, 0, 0]) cylinder(r=$r, h=$y);
+        translate ([$x, 0,  0]) rotate([90, 0, 0]) cylinder(r=$r, h=$y);
+    }
+}
+
+module scaffolding_base() {
+    translate([-17, 3.25, 14]) rounded_cube(34, 6.5, 16, 5);
+    translate([0, 0, -4]) cube([34, 6.5, 27], center=true);
+}
+
 module hotend_attachment_e3dv6() {
   // scaffolding attachment
   translate([0, 24, 9]) {
@@ -130,8 +144,7 @@ module hotend_attachment_e3dv6() {
         translate([0, 0, 26]) {
           // main body
           difference() {
-            translate([0, 0, 8])
-              cube([40, 6.5, 60], center=true);
+            scaffolding_base();
 
             // head attachment slits
             translate([-16, 0, 15]) hull() {
@@ -144,15 +157,19 @@ module hotend_attachment_e3dv6() {
               translate([0, 0, 15])
                 rotate([90, 0, 0]) cylinder(d=$m3_hole, h=10, center=true);
             }
+
+            // shave out excess width
+            translate([-7.5, 5, 33]) rotate([0, 90, 90]) rounded_cube(38, 15, 10, 5);
+            translate([-7, 5, 38]) rotate([90, 0, 90]) rounded_cube(5, 36, 14, 5);
           }
         }
 
         shroud_attachment(false);
       }
-      translate([15, 0, 11])
-        cube([10, 10, 40], center=true);
-      translate([-15, 0, 11])
-        cube([10, 10, 40], center=true);
+
+      // shroud attachment cutouts
+      translate([12, 5, -10]) rounded_cube(10, 10, 40, 5);
+      translate([-22, 5,-10]) rounded_cube(10, 10, 40, 5);
     }
   }
 }
@@ -218,6 +235,6 @@ module hotend_attachment_sunhokey() {
   }
 }
 
-hotend_shroud();
-//hotend_attachment_e3dv6();
-hotend_attachment_sunhokey();
+// hotend_shroud();
+hotend_attachment_e3dv6();
+// hotend_attachment_sunhokey();
