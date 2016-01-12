@@ -15,7 +15,8 @@ module shroud_torus() {
   }
   // Outer ring
   rotate_extrude() translate([26, 0, 0]) hull() {
-    circle(d=6); translate([-3, 0, 0]) circle(d=6);
+    translate([0, 1, 0]) circle(d=8);
+    translate([-3, 0, 0]) circle(d=6);
   }
 }
 
@@ -48,11 +49,17 @@ module fan_attachment() {
 module shroud_attachment($diff) {
   if ($diff) {
     difference() {
-      hull() {
-        cube([6.5, 6.5, 18], center=true);
-        translate([0, 0, 12]) rotate([0, 90, 0]) cylinder(d=6.5, h=6.5, center=true);
+      union() {
+          hull() {
+            cube([6.5, 6.5, 18], center=true);
+            translate([0, 0, 12]) rotate([0, 90, 0]) cylinder(d=6.5, h=6.5, center=true);
+          }
+          hull () {
+            translate([0, 0, 8]) cube([6.5, 6.5, 1], center=true);
+            translate([0, 0, -8]) cube([20, 7.6, 1], center=true);
+          }
       }
-      translate([0, 0, -3]) rotate([0, 90, 0]) cylinder(d=$m3_hole, h=40, center=true);
+      // translate([0, 0, -3]) rotate([0, 90, 0]) cylinder(d=$m3_hole, h=40, center=true);
       translate([0, 0, 12]) rotate([0, 90, 0]) cylinder(d=$m3_hole, h=40, center=true);
     }
   }
@@ -70,26 +77,43 @@ module shroud() {
   shroud_torus();
 
   // scaffolding attachment
-  translate([0, 24, 9])
-    shroud_attachment(true);
+  translate([0, 24, 9]) shroud_attachment(true);
 
 
-  translate([-17, 29.5, 8]) {
+  // fan attachment
+  translate([-17, 29.5, 8]) difference() {
     fan_attachment();
+    translate([25, 7, -8]) cube([10, 16, 7], center=true);
   }
 
-  // zprobe
-  translate([2, 27.2, -3]) z_probe_attachment();
+  z_probe_attachment($sensor_type);
 }
 
-module z_probe_attachment() {
-  difference() {
-    cube([21.4, 25, 15]);
-    // m3 clamp holes
-    translate([0, 21.5, 3]) rotate([0, 90, 0]) cylinder(d=$m3_hole, h=22);
-    translate([0, 21.5, 11]) rotate([0, 90, 0]) cylinder(d=$m3_hole, h=22);
-    translate([2, 2, -1]) cube([17.4, 25, 17]);
-  }
+// zprobe (type=0: square, type=1: 18mm circle)
+module z_probe_attachment(type) {
+    if (type == 0) {
+        translate([2, 27.2, -3]) difference() {
+            difference() {
+                cube([21.4, 25, 15]);
+                // m3 clamp holes
+                translate([0, 21.5, 3]) rotate([0, 90, 0]) cylinder(d=$m3_hole, h=22);
+                translate([0, 21.5, 11]) rotate([0, 90, 0]) cylinder(d=$m3_hole, h=22);
+                translate([2, 3, -1]) cube([17.4, 25, 17]);
+            }
+            // cleanup excess shroud void for z probe
+            //// translate([2, 2, 0]) cube([17.4, 25, 15]);
+        }
+    } else if (type == 1) {
+        translate([2, 27.2, -3]) difference () {
+            difference() {
+                cube([25, 28, 30]);
+                translate([0, 24, 25]) rotate([0, 90, 0]) cylinder(d=$m3_hole, h=25);
+                translate([0, 24, 11]) rotate([0, 90, 0]) cylinder(d=$m3_hole, h=25);
+                translate([8.5, 10, -1]) cube([9, 25, 32]);
+            }
+            translate([13, 12, 0]) cylinder(d=18, h=30);
+        }
+    }
 }
 
 module hotend_shroud() {
@@ -98,7 +122,8 @@ module hotend_shroud() {
 
     // internal ring void
     rotate_extrude() translate([26, 0, 0]) hull() {
-      circle(d=4.8); translate([-3, 0, 0]) circle(d=4.8);
+      translate([0, 1, 0]) circle(d=6);
+      translate([-3, 0, 0]) circle(d=4);
     }
 
     air_holes();
@@ -111,9 +136,6 @@ module hotend_shroud() {
 
     // fan inlet void
     translate([-17, 30.2, -2]) cube([15, 11, 60]);
-
-    // cleanup excess shroud void for z probe
-    translate([4, 29, -3]) cube([17.4, 25, 30]);
   }
 
   // air fins
@@ -132,8 +154,8 @@ module rounded_cube($x, $y, $z, $r) {
 }
 
 module scaffolding_base() {
-    translate([-17, 3.25, 14]) rounded_cube(34, 6.5, 16, 5);
-    translate([0, 0, -4]) cube([34, 6.5, 27], center=true);
+    translate([-17, 3.25, 24]) rounded_cube(34, 6.5, 16, 5);
+    translate([0, 0, 1]) cube([34, 6.5, 37], center=true);
 }
 
 module hotend_attachment_e3dv6() {
@@ -147,20 +169,20 @@ module hotend_attachment_e3dv6() {
             scaffolding_base();
 
             // head attachment slits
-            translate([-16, 0, 15]) hull() {
+            translate([-16, 0, 25]) hull() {
               rotate([90, 0, 0]) cylinder(d=$m3_hole, h=10, center=true);
               translate([0, 0, 15])
                 rotate([90, 0, 0]) cylinder(d=$m3_hole, h=10, center=true);
             }
-            translate([16, 0, 15]) hull() {
+            translate([16, 0, 25]) hull() {
               rotate([90, 0, 0]) cylinder(d=$m3_hole, h=10, center=true);
               translate([0, 0, 15])
                 rotate([90, 0, 0]) cylinder(d=$m3_hole, h=10, center=true);
             }
 
             // shave out excess width
-            translate([-7.5, 5, 33]) rotate([0, 90, 90]) rounded_cube(38, 15, 10, 5);
-            translate([-7, 5, 38]) rotate([90, 0, 90]) rounded_cube(5, 36, 14, 5);
+            translate([-7.5, 5, 43]) rotate([0, 90, 90]) rounded_cube(48, 15, 10, 5);
+            translate([-7, 5, 48]) rotate([90, 0, 90]) rounded_cube(5, 46, 14, 5);
           }
         }
 
@@ -168,8 +190,8 @@ module hotend_attachment_e3dv6() {
       }
 
       // shroud attachment cutouts
-      translate([12, 5, -10]) rounded_cube(10, 10, 40, 5);
-      translate([-22, 5,-10]) rounded_cube(10, 10, 40, 5);
+      translate([12, 5, 0]) rounded_cube(10, 10, 40, 5);
+      translate([-22, 5,0]) rounded_cube(10, 10, 40, 5);
     }
   }
 }
@@ -235,6 +257,9 @@ module hotend_attachment_sunhokey() {
   }
 }
 
-// hotend_shroud();
-hotend_attachment_e3dv6();
+// zprobe sensor type: 0: square, 1: 18mm circle
+$sensor_type=0;
+
+hotend_shroud();
+// hotend_attachment_e3dv6();
 // hotend_attachment_sunhokey();
